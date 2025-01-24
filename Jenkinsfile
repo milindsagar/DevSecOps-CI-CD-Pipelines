@@ -2,8 +2,8 @@ pipeline {
     agent any
 
     tools {
-        jdk 'jdk17'          // Ensure 'jdk17' is configured in Jenkins
-        maven 'maven3'       // Ensure 'maven3' is configured in Jenkins
+        jdk 'jdk17'
+        maven 'maven3'
     }
 
     stages {
@@ -30,6 +30,22 @@ pipeline {
                 sh 'mvn test'
             }
         }
+
+        stage('SonarQube Analysis') {
+            steps {
+                withSonarQubeEnv('sonarqube') {
+                    sh 'mvn sonar:sonar -Dsonar.projectKey=Petshop -Dsonar.projectName=Petshop'
+                }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
     }
 
     post {
@@ -40,7 +56,7 @@ pipeline {
             echo 'Pipeline succeeded!'
         }
         failure {
-            e        }
-    }cho 'Pipeline failed!'
-
+            echo 'Pipeline failed!'
+        }
+    }
 }
