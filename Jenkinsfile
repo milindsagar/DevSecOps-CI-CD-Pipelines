@@ -17,7 +17,7 @@ pipeline {
         
         stage ('checkout SCM') {
             steps {
-                git ']https://github.com/milindsagar/DevSecOps-CI-CD-Pipelines.git'
+                git 'https://github.com/milindsagar/DevSecOps-CI-CD-Pipelines.git'
             }
         }
         
