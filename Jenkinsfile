@@ -46,6 +46,19 @@ pipeline {
                 }
             }
         }
+
+        stage ('Building war file using Maven'){
+            steps{
+                sh 'mvn clean install -DskipTests=true'
+            }
+        }
+        
+        stage("OWASP Dependency Checking"){
+            steps{
+                dependencyCheck additionalArguments: '--scan ./ --format XML ', odcInstallation: 'dependency-check'
+                dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
     }
 
     post {
