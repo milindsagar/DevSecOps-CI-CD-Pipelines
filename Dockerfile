@@ -15,8 +15,8 @@
 #
 
 FROM openjdk:17.0.2
-COPY . /usr/src/myapp
+COPY . .
 WORKDIR /usr/src/myapp
-RUN chmod 777 mvnw
+RUN chmod +x mvnw
 RUN ./mvnw clean package
 CMD ./mvnw cargo:run -P tomcat90
