@@ -5,10 +5,6 @@ pipeline {
         jdk 'jdk17'
         maven 'maven3'
     }
-    
-    environment {
-        SCANNER_HOME=tool 'sonarqube'
-    }
 
     stages {
         stage('Cleaning Workspace') {
@@ -50,17 +46,52 @@ pipeline {
                 }
             }
         }
-
-        stage ('Building war file using Maven'){
-            steps{
+        
+        stage('Building war file using Maven') {
+            steps {
                 sh 'mvn clean install -DskipTests=true'
             }
         }
         
-        stage("OWASP Dependency Checking"){
-            steps{
-                dependencyCheck additionalArguments: '--scan ./ --format XML ', odcInstallation: 'dependency-check'
+        stage('OWASP Dependency Checking') {
+            steps {
+                dependencyCheck additionalArguments: '--scan ./ --format XML', odcInstallation: 'dependency-check'
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+            }
+        }
+
+        stage('Verify Presence of mvnw') {
+            steps {
+                sh 'ls -la'  // List files in the current directory to verify mvnw file presence
+            }
+        }
+
+        stage('Verify Docker Image') {
+            steps {
+                sh "docker images"  // List Docker images to confirm if sagardaw/petshop:01 is built
+            }
+        }
+
+        stage('Building and Pushing to Docker Hub') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
+                        sh "docker build -t sagardaw/petshop:02 . --no-cache --pull"  // Build with no cache to ensure fresh image
+                        sh "docker push sagardaw/petshop:02"
+                    }
+                }
+            }
+        }
+
+        stage('Check if TRIVY is Installed') {
+            steps {
+                sh 'trivy --version'  // Verify if TRIVY is installed and accessible
+            }
+        }
+
+        stage('Image Scanning using TRIVY') {
+            steps {
+                sh "trivy image --no-progress sagardaw/petshop:02 > trivy.txt; cat trivy.txt"  // Show the scan output
             }
         }
     }
