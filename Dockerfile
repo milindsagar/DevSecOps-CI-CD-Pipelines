@@ -15,7 +15,7 @@
 #
 
 FROM openjdk:17.0.2
-COPY . .
+COPY . .  # Copy everything in the current directory
 WORKDIR /usr/src/myapp
 RUN chmod +x mvnw
 RUN ./mvnw clean package
